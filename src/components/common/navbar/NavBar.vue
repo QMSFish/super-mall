@@ -1,8 +1,15 @@
 <template>
   <div class="home-navbar">
-    <slot name="left" class="left"></slot>
-    <slot name="center" class="center"></slot>
-    <slot name="right" class="right"></slot>
+    <div class="left">
+      <slot name="left" ></slot>
+    </div>
+    <div class="center">
+      <slot name="center" >
+    </slot>
+    </div>
+    <div class="right">
+      <slot name="right" ></slot>
+    </div>
   </div>
 </template>
 
@@ -15,14 +22,22 @@ export default {
 </script>
 <style scoped>
   .home-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
     height: 44px;
+    width: 100%;
+    z-index: 1;
     display: flex;
   }
   .left,
   .right {
     width: 50px;
+    height: 100%;
   }
   .center {
     flex: 1;
+    display: flex;
+    justify-content: space-around;
   }
 </style>

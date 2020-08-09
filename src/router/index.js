@@ -9,6 +9,8 @@ const Shopcart = () =>
     import ('views/tabbar/shopcart/Shopcart')
 const Profile = () =>
     import ('views/tabbar/profile/Profile')
+const Detail = () =>
+    import ('views/detail/Detail')
 
 Vue.use(VueRouter);
 
@@ -31,7 +33,15 @@ const routes = [{
     {
         path: '/profile',
         component: Profile
+    },
+    {
+        path: '/detail/:iid',
+        // params: {
+        //     iid
+        // },
+        component: Detail
     }
+
 ]
 
 const router = new VueRouter({

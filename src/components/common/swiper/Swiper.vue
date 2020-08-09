@@ -5,20 +5,10 @@
      @touchstart="startTouch" 
      @touchmove="moveTouch" 
      @touchend="endTouch">
-     <swiper-item class="swiperLastItem" v-if="swiperlist">
-        <a :href="swiperlist[swiperlist.length-1].link">
-          <img :src="swiperlist[swiperlist.length-1].image" alt="">
-        </a>
-      </swiper-item>
       <slot></slot>
-      <swiper-item class="swiperFirstItem" v-if="swiperlist">
-        <a :href="swiperlist[0].link">
-          <img :src="swiperlist[0].image" alt="">
-        </a>
-      </swiper-item>
     </div>
     <ol>
-      <li v-for="(item , index) in swiperlist" :key="item.link" :class="{current: iscurrent===index}"></li>
+      <li v-for="(item , index) in swiperlist" :key="index" :class="{current: iscurrent===index}"></li>
     </ol>
   </div> 
 </template>
@@ -45,11 +35,18 @@ export default {
       movex: 0,
       startx: 0,
       timer: null,
+
     }
   },
   props: {
     swiperlist: Array
   },
+  computed: {
+    getlength() {
+      return this.swiperlist.length
+    }
+  },
+  
   mounted() {
     setTimeout(() => {
        this.handleDom();
@@ -85,11 +82,11 @@ export default {
     // 等着我们过渡完成之后，再去判断 监听过渡完成的事件 transitionend 
     SeamlessRoll() {
       this.flag1 = true;
-      if(this.currentIndex > 4) { //手指左滑动
+      if(this.currentIndex > this.getlength) { //手指左滑动
         this.currentIndex = 1;
         this.jumpLoacation();
       } else if(this.currentIndex < 1) { //手指右滑动
-        this.currentIndex = 4;
+        this.currentIndex = this.getlength;
         this.jumpLoacation(); 
       };
       // 3. 小圆点跟随变化   最好是过渡执行完后
@@ -181,11 +178,6 @@ export default {
   .swiper-item {
     float: left;
     width: 10%;
-  }
-  .swiperFirstItem img,
-  .swiperLastItem img {
-    width: 100%;
-    height: 195px;
   }
   .swiper ol {
     position: absolute;
