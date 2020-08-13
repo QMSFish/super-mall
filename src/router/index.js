@@ -44,6 +44,15 @@ const routes = [{
 
 ]
 
+// Vue-router V3.1.0版本里面新增功能：push和replace方法会返回一个promise, 你可能在控制台看到未捕获的异常
+// 对Router原型链上的push、replace方法进行重写，这样就不用每次调用方法都要加上catch
+// 重写代码现在还不是很懂
+// const originalPush = Router.prototype.push
+// Router.prototype.push = function push(location, onResolve, onReject) {
+//     if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+//     return originalPush.call(this, location).catch(err => err)
+// }
+
 const router = new VueRouter({
     routes,
     mode: 'history'

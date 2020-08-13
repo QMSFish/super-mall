@@ -20,15 +20,18 @@ export default {
   data() {
     return {
       navcontent: ['商品','参数','评价','推荐'],
-      isactive: 0
+      // isactive: 0
     }
+  },
+  props: {
+    isactive: Number
   },
   components: {
     NavBar
   },
   methods: {
     itemclick(index) {
-      this.isactive = index
+      this.$emit('active',index);
     },
     backclick() {
       this.$router.back();

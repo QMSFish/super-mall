@@ -1,13 +1,20 @@
 <template>
-  <div class="home">
+  <div class="home"> 
     <nav-bar class="home-navbar"><div slot="center" class="center-slot">购物街</div></nav-bar>
-    <home-swiper :bannerlist='banner'></home-swiper>
-    <recommend :recommend="recommend"></recommend>
-    <feature-view></feature-view>
     <nav-control :navcontent="[{content: '流行',type: 'pop'},{content: '新款',type: 'sell'},{content: '精选',type: 'new'}]" 
-    @getactive="changeview"></nav-control>
-    <goods-list :goods="goods[type].list"></goods-list>
-    <ul>
+    :iscurrent="iscurrent" @getactive="changeview" v-show="isShow" class="nav-controll"></nav-control>
+    <bscroll class="home-bscroll" :probeType="2" :click="true" :pullup="true" @pullUp="requestData" 
+    @Bscroll="toScroll"
+    ref="bscroll">
+      <home-swiper :bannerlist='banner'></home-swiper>
+      <recommend :recommend="recommend"></recommend>
+      <feature-view></feature-view>
+      <nav-control :navcontent="[{content: '流行',type: 'pop'},{content: '新款',type: 'sell'},{content: '精选',type: 'new'}]" 
+      :iscurrent="iscurrent" @getactive="changeview" ref="navcontrol"></nav-control>
+      <goods-list :goods="goods[type].list" @loadImg="loadingImg"></goods-list>
+    </bscroll>
+    <div class="backTop" v-show="isShow" @click="backTop"></div>
+    <!-- <ul>
       <li>1</li>
       <li>2</li>
       <li>3</li>
@@ -107,7 +114,7 @@
       <li>97</li>
       <li>98</li>
       <li>99</li>
-    </ul>
+    </ul> -->
   </div>
 </template>
 
@@ -118,9 +125,12 @@ import Recommend from 'views/tabbar/home/homechildcomps/RecommendView'
 import FeatureView from 'views/tabbar/home/homechildcomps/FeatureView'
 import NavControl from 'components/content/home/NavControl'
 import GoodsList from 'components/content/goods/GoodsList'
+import Bscroll from 'components/common/Bscroll'
 
 import {getHomeMultidata} from 'network/home'
 import {getHomeGoodsData} from 'network/home'
+
+import debounce from 'common/debounce'
 
 
 
@@ -136,6 +146,12 @@ export default {
         new: {page: 0,list: []}
       },
       type: 'pop',
+      bscroll: {},
+      navControl: {},
+      isShow: false,
+      iscurrent: 0,
+      flag: false, // true的时候 执行finishPullUp()
+      timer: null, //图片加载定时器
 
     }
   },
@@ -145,7 +161,8 @@ export default {
     Recommend,
     FeatureView,
     NavControl,
-    GoodsList
+    GoodsList,
+    Bscroll,
     
   },
   created() {
@@ -156,17 +173,40 @@ export default {
     this.getHomeGoodsData1('pop', 1);
     this.getHomeGoodsData1('sell', 1);
     this.getHomeGoodsData1('new', 1);
+    // this.$nextTick(() => {
+    //   this.bscroll._initScroll();
+    // })
+    // setTimeout(() => {
+    //   this.bscroll._initScroll();
+    // }, 2000);
+  },
+  //数据更新循环之后初始化或刷新better-scroll
+  updated() {
+    this.bscroll._initScroll();
+    // console.log(this.$refs.bscroll.scroll); 
+  }, 
+  mounted() {
+    // 获取dom元素
+    this.bscroll = this.$refs.bscroll;
+    // console.log(this.$refs.bscroll.scroll);
+    this.navControl = this.$refs.navcontrol;
+    // this.$nextTick(() => {
+    //  this.bscroll = this.$refs.bscroll.scroll;
+    //  this.navControl = this.$refs.navcontrol;
+    // })
 
   },
   methods: {
-    changeview(type) {
-      this.type = type
+    changeview(value) {
+      this.type = value.type;
+      this.iscurrent = value.index;
       console.log(this.type);
     },
     getHomeMultidata1() {
       getHomeMultidata().then(res => {
         if(res) {
-          console.log(res);
+          // console.log(res);
+          // console.log("请求数据1");
           this.banner = res.data.banner.list;
           this.recommend = res.data.recommend.list
         }
@@ -175,12 +215,59 @@ export default {
       getHomeGoodsData(type, n).then(res => {
         if(res) {
           // console.log(res);
+          // console.log("请求数据2");
           this.goods[type].list.push(...res.data.list);
           // console.log(this.goods[type].list);
-          this.goods[type].page++
+          this.goods[type].page++;
+          if(this.flag) {
+            this.$nextTick(() => {
+              this.bscroll.scroll.finishPullUp();
+              this.flag = false;
+            })
+          }
         }
     })},
-
+    //上拉加载更多页数据
+    requestData() {
+      this.flag = true;
+      // console.log(this.$refs.bscroll);
+      let page = this.goods[this.type].page;
+      this.getHomeGoodsData1(this.type, page++)
+      // 发送网络请求，请求更多页的数据
+      //等待数据请求成功，并且将新的数据展示处理出来
+      // setTimeout(() => {
+      //     this.bscroll.scroll.finishPullUp()
+      //   }, 2000);
+    },
+    toScroll(position) {
+      // console.log(position);
+      // console.log(this.navControl.$el);
+      // console.log(this.navControl.offsetTop); // undefined
+      // console.log(this.navControl.$el.offsetTop);
+      if((-position.y) >= this.navControl.$el.offsetTop) {
+        // better-scroll中内层fixed基本无效 偏移量只是相对于外层而言
+        // this.navControl.$el.style.position = "absolute";
+        // this.navControl.$el.style.top = "44px";
+        // this.navControl.$el.style.left = "0";
+        this.isShow = true;
+      } else {
+        this.isShow = false;
+      }
+    },
+    // 图片加载+设置防抖功能
+    loadingImg() {
+      debounce(this.refresh)
+      // this.bscroll.scroll.refresh();
+      // console.log("图片加载完成");
+    },
+    // better-scroll 图片加载后refresh
+    refresh() {
+      this.bscroll.scroll.refresh();
+    },
+    //回到顶部
+    backTop() { 
+      this.bscroll.scroll.scrollTo(0,0,500);
+    }
   }
 }
   
@@ -188,13 +275,34 @@ export default {
 <style scoped>
   .home {
     padding-top: 44px;
+    height: 100vh;
+  }
+  .nav-controll {
+    position: fixed;
+    top: 44px;
+    left: 0;
+    z-index: 2;
   }
   .home-navbar {
     background-color: var(--color-tint);
+  }
+  .home-bscroll {
+    height: calc(100% - 55px);
+    overflow: hidden;
+    
   }
   .center-slot {
     color: var(--color-background);
     /* text-align: center; */
     line-height: 44px;
+  }
+  .backTop {
+    position: fixed;
+    right: 15px;
+    bottom: 75px;
+    width: 43px;
+    height: 43px;
+    background: url(~assets/img/common/top.png) no-repeat;
+    background-size: 43px;
   }
 </style>

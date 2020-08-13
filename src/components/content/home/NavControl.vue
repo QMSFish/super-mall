@@ -11,20 +11,16 @@
 <script>
 export default {
   name: 'navcontrol',
-  data() {
-    return {
-      iscurrent: 0
-    }
-  },
   props: {
-    navcontent: Array
+    navcontent: Array,
+    iscurrent: Number
   },
   methods: {
     getactive(index,type) {
-      this.iscurrent = index;
+      // this.iscurrent = index;
       console.log(type);
       console.log(typeof type);
-      this.$emit('getactive',type)
+      this.$emit('getactive',{type,index})
     }
   }
 }
@@ -32,14 +28,16 @@ export default {
 </script>
 <style scoped>
   .navcontrol {
-    position: sticky;
-    top: 44px;
+    /* position: sticky;
+    top: 44px; */
     display: flex;
     font-size: 14px;
+    width: 100%;
+
     padding: 5px 0;
     /* justify-content: space-around; */
     background-color: #fff;
-    z-index: 2;
+    /* z-index: 2; */
   }
   .navcontrol>div {
     flex: 1;

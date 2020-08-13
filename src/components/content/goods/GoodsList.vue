@@ -1,7 +1,7 @@
 <template>
   <div class='goodslist'>
     <good-item v-for="item in goods" :key="item.image" class="gooditem" @click.native="showGoodDetail(item.iid)">
-      <img :src="item.show ? item.show.img : item.image" alt="">
+      <img :src="item.show ? item.show.img : item.image" alt="" @load="loadImg">
       <div class="goods-info">
         <p>{{item.title}}</p>
         <span class="price">{{item.price}}</span>
@@ -29,7 +29,11 @@ export default {
   },
   methods: {
     showGoodDetail(iid) {
-      this.$router.push('/detail/' + iid)
+      //解决重复跳转同一个页面出现跳转失败的bug
+      // 在调用方法的时候用catch捕获异常
+      // 还有一种方法： 对Router原型链上的push、replace方法进行重写，这样就不用每次调用方法都要加上catch
+      
+      this.$router.push('/detail/' + iid).catch(err => err);
       // this.$router.push({
       //   path: '/detail',
       //   query: {
@@ -37,7 +41,11 @@ export default {
       //   }
       // })
       // this.$emit('requestDetail',iid)
-      // console.log(11);
+      console.log(11);
+    },
+    //图片加载完成、执行better-scroll的refresh
+    loadImg() {
+      this.$emit('loadImg')
     }
   },
   

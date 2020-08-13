@@ -9,7 +9,7 @@
         <a :href="item.link">
           <img :src="item.image" alt="">
         </a>
-      </swiper-item>
+      </swiper-item> 
       <swiper-item v-if="bannerlist"> 
         <a :href="bannerlist[0].link">
           <img :src="bannerlist[0].image" alt="">

@@ -34,7 +34,9 @@ export default {
       return transformTimer(this.getcomment.created * 1000)
     },
     getcomment() {
-      return this.comment.list[0]
+      if(this.comment&&this.comment.list) {
+        return this.comment.list[0]
+      }
     }
     // handleImg() {
     //   return this.comment.images? this.comment.images : ''

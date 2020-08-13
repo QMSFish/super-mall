@@ -32,7 +32,7 @@ export default {
   },
   methods: {
     changeroute() {
-      this.$router.replace(this.path);
+      this.$router.replace(this.path).catch(err => err);
       // console.log(this.$route.path);
       // console.log(this.path);
       // this.isactive = this.$route.path === this.path
